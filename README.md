@@ -19,7 +19,6 @@ O projeto nasceu da minha vivência como estagiário de TI, dando suporte técni
 - **Backend:** Python 3 + Flask
 - **Banco de dados:** PostgreSQL
 - **Frontend:** HTML5, CSS3, Jinja2 (templates do Flask)
-- **Modelagem do banco:** DBeaver
 
 ## Estrutura do projeto
 
