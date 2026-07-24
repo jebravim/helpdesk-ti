@@ -1,6 +1,6 @@
 # Sistema de Gestão de Chamados de TI (Helpdesk)
 
-Sistema web para abertura, acompanhamento e resolução de chamados de suporte técnico, o back-end foi desenvolvido com Python (Flask) e PostgreSQL, o front-end foi desenvolvido com HTML5 e CSS3
+Sistema web para abertura, acompanhamento e resolução de chamados de suporte técnico, o back-end foi desenvolvido com Python (Flask) e PostgreSQL, o front-end foi desenvolvido com HTML5 e CSS3.
 
 O projeto nasceu da minha vivência como estagiário de TI, dando suporte técnico, configurando computadores, impressoras e redes, e lidando na prática com a necessidade de organizar e acompanhar solicitações de suporte de forma estruturada.
 
