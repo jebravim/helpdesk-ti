@@ -1,10 +1,10 @@
-# 🖥️ Sistema de Gestão de Chamados de TI (Helpdesk)
+# Sistema de Gestão de Chamados de TI (Helpdesk)
 
 Sistema web para abertura, acompanhamento e resolução de chamados de suporte técnico, desenvolvido com Python (Flask) e PostgreSQL.
 
 O projeto nasceu da minha vivência como estagiário de TI, dando suporte técnico, configurando computadores, impressoras e redes, e lidando na prática com a necessidade de organizar e acompanhar solicitações de suporte de forma estruturada.
 
-## 📋 Funcionalidades
+## Funcionalidades
 
 - Abertura de chamados com título, descrição, prioridade e equipamento relacionado
 - Listagem de chamados com filtros por status e prioridade
@@ -14,14 +14,14 @@ O projeto nasceu da minha vivência como estagiário de TI, dando suporte técni
 - Dashboard com contadores por status e tempo médio de resolução
 - API REST em JSON para integração futura (ex: com um frontend em React)
 
-## 🛠️ Tecnologias utilizadas
+## Tecnologias utilizadas
 
 - **Backend:** Python 3 + Flask
 - **Banco de dados:** PostgreSQL
 - **Frontend:** HTML5, CSS3, Jinja2 (templates do Flask)
 - **Modelagem do banco:** DBeaver
 
-## 🗂️ Estrutura do projeto
+## Estrutura do projeto
 
 ```
 helpdesk-ti/
@@ -39,7 +39,7 @@ helpdesk-ti/
 └── README.md
 ```
 
-## 🧱 Modelo de dados
+## Modelo de dados
 
 O banco possui 4 tabelas principais:
 
@@ -54,11 +54,11 @@ usuarios ──┬──< chamados >──── equipamentos
            └──< historico_chamados
 ```
 
-## 🚀 Como rodar o projeto localmente
+## Como rodar o projeto localmente
 
 ### Pré-requisitos
 - Python 3.10+
-- PostgreSQL instalado (ou uma conta gratuita em [Neon](https://neon.tech) / [Supabase](https://supabase.com))
+- PostgreSQL instalado (ou uma conta gratuita em Neon](https://neon.tech) / [Supabase](https://supabase.com))
 
 ### 1. Clone o repositório
 ```bash
@@ -89,13 +89,8 @@ python app.py
 
 Acesse em: `http://localhost:5000`
 
-## 🌐 Deploy (opcional)
 
-Este projeto pode ser publicado gratuitamente com:
-- **Backend:** [Render](https://render.com) ou [Railway](https://railway.app)
-- **Banco de dados:** [Neon](https://neon.tech) ou [Supabase](https://supabase.com) (PostgreSQL gratuito)
-
-## 📈 Possíveis evoluções futuras
+## Possíveis evoluções futuras
 
 - [ ] Autenticação de usuários (login/senha)
 - [ ] Envio de e-mail automático ao abrir/fechar chamado
@@ -104,5 +99,7 @@ Este projeto pode ser publicado gratuitamente com:
 
 ## 👤 Autor
 
-**José Eduardo Bravim Barbosa**
-Estudante de Ciência da Computação | [LinkedIn](#) | jebravim@gmail.com
+José Eduardo Bravim Barbosa
+Estudante de Ciência da Computação
+Linkedin: https://www.linkedin.com/in/jos%C3%A9-eduardo-bravim-barbosa/
+E-mail: jebravim@gmail.com
