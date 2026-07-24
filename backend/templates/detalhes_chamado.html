@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Chamado #{{ chamado.id }} | Helpdesk TI{% endblock %}
+{% block content %}
+
+{% if chamado %}
+<a href="{{ url_for('index') }}" class="voltar">&larr; Voltar</a>
+
+<h1>#{{ chamado.id }} — {{ chamado.titulo }}</h1>
+<div class="tags">
+    <span class="badge badge-{{ chamado.prioridade }}">{{ chamado.prioridade }}</span>
+    <span class="badge badge-{{ chamado.status }}">{{ chamado.status.replace('_', ' ') }}</span>
+</div>
+
+<div class="detalhes-grid">
+    <div>
+        <h3>Descrição</h3>
+        <p>{{ chamado.descricao or "Sem descrição." }}</p>
+
+        <h3>Informações</h3>
+        <ul class="info-list">
+            <li><strong>Solicitante:</strong> {{ chamado.solicitante or "—" }}</li>
+            <li><strong>Técnico responsável:</strong> {{ chamado.tecnico or "Não atribuído" }}</li>
+            <li><strong>Equipamento:</strong>
+                {% if chamado.equipamento_tipo %}
+                    {{ chamado.equipamento_tipo }} - {{ chamado.equipamento_modelo }}
+                {% else %}
+                    Não informado
+                {% endif %}
+            </li>
+            <li><strong>Aberto em:</strong> {{ chamado.data_abertura.strftime('%d/%m/%Y %H:%M') }}</li>
+            {% if chamado.data_fechamento %}
+            <li><strong>Fechado em:</strong> {{ chamado.data_fechamento.strftime('%d/%m/%Y %H:%M') }}</li>
+            {% endif %}
+        </ul>
+
+        <h3>Histórico</h3>
+        <ul class="historico">
+            {% for h in historico %}
+            <li>
+                <span class="historico-data">{{ h.data.strftime('%d/%m/%Y %H:%M') }}</span>
+                <strong>{{ h.autor or "Sistema" }}:</strong> {{ h.comentario }}
+            </li>
+            {% else %}
+            <li class="vazio">Nenhum registro ainda.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="painel-acao">
+        <h3>Atualizar chamado</h3>
+        <form method="post" action="{{ url_for('atualizar_chamado', chamado_id=chamado.id) }}">
+            <label for="tecnico_id">Atribuir técnico</label>
+            <select id="tecnico_id" name="tecnico_id">
+                <option value="">Não atribuído</option>
+                {% for t in tecnicos %}
+                <option value="{{ t.id }}">{{ t.nome }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="aberto" {% if chamado.status == 'aberto' %}selected{% endif %}>Aberto</option>
+                <option value="em_andamento" {% if chamado.status == 'em_andamento' %}selected{% endif %}>Em andamento</option>
+                <option value="fechado" {% if chamado.status == 'fechado' %}selected{% endif %}>Fechado</option>
+            </select>
+
+            <label for="comentario">Adicionar comentário</label>
+            <textarea id="comentario" name="comentario" rows="3" placeholder="O que foi feito?"></textarea>
+
+            <button type="submit" class="btn-primario">Salvar</button>
+        </form>
+    </div>
+</div>
+
+{% else %}
+<p>Chamado não encontrado.</p>
+{% endif %}
+
+{% endblock %}

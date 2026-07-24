@@ -1,0 +1,194 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f4f6f9;
+    color: #1f2937;
+}
+
+.topbar {
+    background: #1e3a5f;
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn-novo, .btn-primario {
+    background: #2f80ed;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-novo:hover, .btn-primario:hover { background: #1c64d1; }
+
+.container {
+    max-width: 1100px;
+    margin: 32px auto;
+    padding: 0 24px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border-top: 4px solid #ccc;
+}
+
+.card-aberto { border-color: #e67e22; }
+.card-andamento { border-color: #2f80ed; }
+.card-fechado { border-color: #27ae60; }
+.card-media { border-color: #8e44ad; }
+
+.card .numero {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.card .label {
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+
+.filtros { margin-bottom: 16px; }
+.filtros select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    margin-right: 8px;
+}
+
+.tabela-wrapper {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+th, td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eef0f2;
+    font-size: 0.9rem;
+}
+
+th { background: #f8f9fb; color: #6b7280; font-weight: 600; }
+
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: #f8fafc; }
+
+.vazio { text-align: center; color: #9ca3af; padding: 24px; }
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: white;
+}
+
+.badge-baixa { background: #94a3b8; }
+.badge-media { background: #2f80ed; }
+.badge-alta { background: #e67e22; }
+.badge-urgente { background: #e74c3c; }
+
+.badge-aberto { background: #e67e22; }
+.badge-em_andamento { background: #2f80ed; }
+.badge-fechado { background: #27ae60; }
+
+.formulario {
+    background: white;
+    padding: 24px;
+    border-radius: 10px;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.formulario label { font-size: 0.85rem; font-weight: 600; margin-top: 10px; color: #374151; }
+
+.formulario input, .formulario select, .formulario textarea {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.formulario button { margin-top: 16px; }
+
+.voltar { display: inline-block; margin-bottom: 16px; color: #2f80ed; text-decoration: none; }
+
+.tags { margin: 8px 0 20px; display: flex; gap: 8px; }
+
+.detalhes-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.detalhes-grid h3 { margin-top: 20px; margin-bottom: 8px; font-size: 1rem; }
+.detalhes-grid h3:first-child { margin-top: 0; }
+
+.info-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+
+.historico { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.historico li {
+    background: white;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+.historico-data { display: block; font-size: 0.75rem; color: #9ca3af; }
+
+.painel-acao {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    height: fit-content;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.painel-acao form { display: flex; flex-direction: column; gap: 4px; }
+.painel-acao label { font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
+.painel-acao select, .painel-acao textarea {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-family: inherit;
+}
+.painel-acao button { margin-top: 14px; }
+
+@media (max-width: 768px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .detalhes-grid { grid-template-columns: 1fr; }
+}

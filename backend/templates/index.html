@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Helpdesk TI{% endblock %}
+{% block content %}
+
+<section class="cards">
+    <div class="card card-aberto">
+        <span class="numero">{{ abertos }}</span>
+        <span class="label">Abertos</span>
+    </div>
+    <div class="card card-andamento">
+        <span class="numero">{{ em_andamento }}</span>
+        <span class="label">Em andamento</span>
+    </div>
+    <div class="card card-fechado">
+        <span class="numero">{{ fechados }}</span>
+        <span class="label">Fechados</span>
+    </div>
+    <div class="card card-media">
+        <span class="numero">{{ media_horas if media_horas else "—" }}h</span>
+        <span class="label">Tempo médio de resolução</span>
+    </div>
+</section>
+
+<section class="filtros">
+    <form method="get">
+        <select name="status" onchange="this.form.submit()">
+            <option value="">Todos os status</option>
+            <option value="aberto" {% if status_filtro == 'aberto' %}selected{% endif %}>Aberto</option>
+            <option value="em_andamento" {% if status_filtro == 'em_andamento' %}selected{% endif %}>Em andamento</option>
+            <option value="fechado" {% if status_filtro == 'fechado' %}selected{% endif %}>Fechado</option>
+        </select>
+        <select name="prioridade" onchange="this.form.submit()">
+            <option value="">Todas as prioridades</option>
+            <option value="baixa" {% if prioridade_filtro == 'baixa' %}selected{% endif %}>Baixa</option>
+            <option value="media" {% if prioridade_filtro == 'media' %}selected{% endif %}>Média</option>
+            <option value="alta" {% if prioridade_filtro == 'alta' %}selected{% endif %}>Alta</option>
+            <option value="urgente" {% if prioridade_filtro == 'urgente' %}selected{% endif %}>Urgente</option>
+        </select>
+    </form>
+</section>
+
+<section class="tabela-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Título</th>
+                <th>Solicitante</th>
+                <th>Técnico</th>
+                <th>Prioridade</th>
+                <th>Status</th>
+                <th>Abertura</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in chamados %}
+            <tr onclick="window.location='{{ url_for('detalhes_chamado', chamado_id=c.id) }}'">
+                <td>#{{ c.id }}</td>
+                <td>{{ c.titulo }}</td>
+                <td>{{ c.solicitante or "—" }}</td>
+                <td>{{ c.tecnico or "Não atribuído" }}</td>
+                <td><span class="badge badge-{{ c.prioridade }}">{{ c.prioridade }}</span></td>
+                <td><span class="badge badge-{{ c.status }}">{{ c.status.replace('_', ' ') }}</span></td>
+                <td>{{ c.data_abertura.strftime('%d/%m/%Y %H:%M') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="vazio">Nenhum chamado encontrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{% endblock %}
