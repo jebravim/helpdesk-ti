@@ -88,14 +88,6 @@ python app.py
 
 Acesse em: `http://localhost:5000`
 
-
-## Possíveis evoluções futuras
-
-- [ ] Autenticação de usuários (login/senha)
-- [ ] Envio de e-mail automático ao abrir/fechar chamado
-- [ ] Frontend em React consumindo a API REST já existente
-- [ ] Gráficos no dashboard (chamados por dia, por setor, etc.)
-
 ## 👤 Autor
 
 José Eduardo Bravim Barbosa
