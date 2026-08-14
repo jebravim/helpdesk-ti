@@ -1,49 +1,178 @@
-{% extends "base.html" %}
-{% block title %}Novo Chamado | Helpdesk TI{% endblock %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="pt-BR">
 
-<h1>Abrir novo chamado</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<form method="post" class="formulario">
-    <label for="titulo">Título</label>
-    <input type="text" id="titulo" name="titulo" required placeholder="Ex: Impressora não imprime">
+    <title>Novo chamado | Helpdesk TI</title>
 
-    <label for="descricao">Descrição</label>
-    <textarea id="descricao" name="descricao" rows="4" placeholder="Descreva o problema com detalhes"></textarea>
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
 
-    <label for="prioridade">Prioridade</label>
-    <select id="prioridade" name="prioridade">
-        <option value="baixa">Baixa</option>
-        <option value="media" selected>Média</option>
-        <option value="alta">Alta</option>
-        <option value="urgente">Urgente</option>
-    </select>
+<body>
 
-    <label for="solicitante_id">Solicitante</label>
-    <select id="solicitante_id" name="solicitante_id">
-        <option value="">Selecione...</option>
-        {% for u in usuarios %}
-        <option value="{{ u.id }}">{{ u.nome }}</option>
-        {% endfor %}
-    </select>
+    <div class="container">
 
-    <label for="tecnico_id">Técnico</label>
-    <select id="tecnico_id" name="tecnico_id">
-        <option value="">Selecione...</option>
-        {% for u in usuarios %}
-        <option value="{{ u.id }}">{{ u.nome }}</option>
-        {% endfor %}
-    </select>
+        <div class="card">
 
-    <label for="equipamento_id">Equipamento (opcional)</label>
-    <select id="equipamento_id" name="equipamento_id">
-        <option value="">Nenhum</option>
-        {% for e in equipamentos %}
-        <option value="{{ e.id }}">{{ e.tipo }} - {{ e.modelo }}</option>
-        {% endfor %}
-    </select>
+            <h1>Novo chamado</h1>
 
-    <button type="submit" class="btn-primario">Abrir chamado</button>
-</form>
+            <p>
+                Preencha os dados abaixo para registrar seu chamado.
+            </p>
 
-{% endblock %}
+            {% if erro %}
+                <div class="alert alert-danger">
+                    {{ erro }}
+                </div>
+            {% endif %}
+
+            <form method="POST">
+
+                <!-- TÍTULO -->
+                <div class="form-group">
+
+                    <label for="titulo">
+                        Título
+                    </label>
+
+                    <input
+                        type="text"
+                        id="titulo"
+                        name="titulo"
+                        placeholder="Digite o título do chamado"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- DESCRIÇÃO -->
+                <div class="form-group">
+
+                    <label for="descricao">
+                        Descrição
+                    </label>
+
+                    <textarea
+                        id="descricao"
+                        name="descricao"
+                        rows="6"
+                        placeholder="Descreva o problema ou solicitação"
+                        required
+                    ></textarea>
+
+                </div>
+
+
+                <!-- NOME -->
+                <div class="form-group">
+
+                    <label for="nome">
+                        Nome
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        placeholder="Digite seu nome"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- SETOR -->
+                <div class="form-group">
+
+                    <label for="setor">
+                        Setor
+                    </label>
+
+                    <select
+                        id="setor"
+                        name="setor"
+                        required
+                    >
+
+                        <option value="">
+                            Selecione seu setor
+                        </option>
+
+                        {% for setor in setores %}
+
+                            <option value="{{ setor.setor }}">
+                                {{ setor.setor }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- PRIORIDADE -->
+                <div class="form-group">
+
+                    <label for="prioridade">
+                        Prioridade
+                    </label>
+
+                    <select
+                        id="prioridade"
+                        name="prioridade"
+                        required
+                    >
+
+                        <option value="">
+                            Selecione a prioridade
+                        </option>
+
+                        <option value="baixa">
+                            Baixa
+                        </option>
+
+                        <option value="media">
+                            Média
+                        </option>
+
+                        <option value="alta">
+                            Alta
+                        </option>
+
+                        <option value="critica">
+                            Crítica
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- BOTÃO -->
+                <div class="form-actions">
+
+                    <button
+                        type="submit"
+                        class="btn-primary"
+                    >
+                        Registrar chamado
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
