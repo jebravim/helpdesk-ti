@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Login Técnico{% endblock %}
+
+{% block content %}
+<h1>Área do Técnico</h1>
+
+{% if erro %}
+<div class="alert-erro">{{ erro }}</div>
+{% endif %}
+
+<form class="formulario" method="POST" action="{{ url_for('tecnico_login') }}">
+    <label for="email">E-mail</label>
+    <input type="email" id="email" name="email" required autofocus>
+
+    <label for="senha">Senha</label>
+    <input type="password" id="senha" name="senha" required>
+
+    <button type="submit" class="btn-primario">Entrar</button>
+</form>
+{% endblock %}

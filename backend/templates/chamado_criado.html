@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Chamado Criado{% endblock %}
+
+{% block content %}
+<h1>Chamado aberto com sucesso!</h1>
+
+<p>
+    Guarde o código abaixo — ele é necessário para acompanhar o status do
+    seu chamado.
+</p>
+<p class="codigo-destaque">{{ codigo_acompanhamento }}</p>
+
+<ul class="info-list">
+    <li><strong>Solicitante:</strong> {{ nome }}</li>
+    <li><strong>Setor:</strong> {{ setor }}</li>
+</ul>
+
+<div class="tags">
+    <a href="{{ url_for('meus_chamados', nome=nome, codigo=codigo_acompanhamento) }}" class="btn-novo">
+        Ver status agora
+    </a>
+</div>
+
+<a href="{{ url_for('novo_chamado') }}" class="voltar">← Abrir outro chamado</a>
+{% endblock %}

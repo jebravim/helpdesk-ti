@@ -1,10 +1,71 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from functools import wraps
+from werkzeug.security import check_password_hash
 from database import query
 from config import SECRET_KEY
 import secrets
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+
+
+# ============================================================
+# LOGIN (TÉCNICO/ADMIN)
+# ============================================================
+# Proteção por sessão para a área do técnico.
+# ============================================================
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("usuario_id"):
+            return redirect(url_for("tecnico_login", proximo=request.path))
+        return f(*args, **kwargs)
+    return decorated
+
+
+@app.route("/tecnico/login", methods=["GET", "POST"])
+def tecnico_login():
+
+    erro = None
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        senha = request.form.get("senha", "").strip()
+
+        usuario = query(
+            """
+            SELECT id, nome, tipo, senha_hash
+            FROM usuarios
+            WHERE email = %s
+              AND tipo IN ('tecnico', 'admin')
+            """,
+            (email,),
+        )
+
+        senha_ok = (
+            usuario
+            and usuario[0]["senha_hash"]
+            and check_password_hash(usuario[0]["senha_hash"], senha)
+        )
+
+        if not senha_ok:
+            erro = "E-mail ou senha inválidos."
+        else:
+            session["usuario_id"] = usuario[0]["id"]
+            session["usuario_nome"] = usuario[0]["nome"]
+            session["usuario_tipo"] = usuario[0]["tipo"]
+
+            proximo = request.args.get("proximo") or url_for("dashboard_tecnico")
+            return redirect(proximo)
+
+    return render_template("tecnico_login.html", erro=erro)
+
+
+@app.route("/tecnico/logout")
+def tecnico_logout():
+    session.clear()
+    return redirect(url_for("tecnico_login"))
 
 
 # ============================================================
@@ -45,13 +106,8 @@ def novo_chamado():
 
         if not titulo or not descricao or not nome or not setor or not prioridade:
 
-            setores = query("""
-                SELECT DISTINCT setor
-                FROM usuarios
-                WHERE setor IS NOT NULL
-                  AND TRIM(setor) <> ''
-                ORDER BY setor
-            """)
+            # Setores agora vêm da tabela dedicada "setores"
+            setores = query("SELECT id, nome FROM setores ORDER BY nome")
 
             return render_template(
                 "novo_chamado.html",
@@ -128,15 +184,8 @@ def novo_chamado():
     # GET - carregar setores
     # --------------------------------------------------------
 
-    setores = query(
-        """
-        SELECT DISTINCT setor
-        FROM usuarios
-        WHERE setor IS NOT NULL
-          AND TRIM(setor) <> ''
-        ORDER BY setor
-        """
-    )
+    # Setores vêm da tabela dedicada "setores"
+    setores = query("SELECT id, nome FROM setores ORDER BY nome")
 
     return render_template(
         "novo_chamado.html",
@@ -147,51 +196,61 @@ def novo_chamado():
 # ============================================================
 # ACOMPANHAMENTO DE CHAMADOS
 # ============================================================
+# A busca é por nome (obrigatório), com o
+# código de acompanhamento como filtro opcional para desempatar
+# nomes repetidos.
+# ============================================================
 
 @app.route("/meus-chamados", methods=["GET", "POST"])
 def meus_chamados():
 
-    codigo = ""
-
     if request.method == "POST":
-        codigo = request.form.get(
-            "codigo_acompanhamento",
-            ""
-        ).strip()
-
+        nome = request.form.get("nome", "").strip()
+        codigo = request.form.get("codigo_acompanhamento", "").strip()
+        buscou = True
     else:
-        codigo = request.args.get(
-            "codigo",
-            ""
-        ).strip()
+        nome = request.args.get("nome", "").strip()
+        codigo = request.args.get("codigo", "").strip()
+        buscou = bool(nome)
 
     chamados = []
+    erro = None
 
-    if codigo:
-
-        chamados = query(
+    if buscou:
+        if not nome:
+            erro = "Informe o nome para buscar."
+        else:
+            sql = """
+                SELECT
+                    id,
+                    titulo,
+                    descricao,
+                    prioridade,
+                    status,
+                    solicitante_nome,
+                    solicitante_setor,
+                    data_abertura,
+                    data_fechamento,
+                    codigo_acompanhamento
+                FROM chamados
+                WHERE solicitante_nome ILIKE %s
             """
-            SELECT
-                id,
-                titulo,
-                descricao,
-                prioridade,
-                status,
-                solicitante_nome,
-                solicitante_setor,
-                data_abertura,
-                data_fechamento
-            FROM chamados
-            WHERE codigo_acompanhamento = %s
-            ORDER BY data_abertura DESC
-            """,
-            (codigo,),
-        )
+            params = [nome]
+
+            if codigo:
+                sql += " AND codigo_acompanhamento = %s"
+                params.append(codigo)
+
+            sql += " ORDER BY data_abertura DESC"
+
+            chamados = query(sql, params)
 
     return render_template(
         "meus_chamados.html",
         chamados=chamados,
+        nome=nome,
         codigo=codigo,
+        erro=erro,
     )
 
 
@@ -200,6 +259,7 @@ def meus_chamados():
 # ============================================================
 
 @app.route("/tecnico")
+@login_required
 def dashboard_tecnico():
 
     status_filtro = request.args.get("status", "")
@@ -304,6 +364,7 @@ def dashboard_tecnico():
 # ============================================================
 
 @app.route("/chamados/<int:chamado_id>")
+@login_required
 def detalhes_chamado(chamado_id):
 
     chamado = query(
@@ -371,6 +432,7 @@ def detalhes_chamado(chamado_id):
     "/chamados/<int:chamado_id>/atualizar",
     methods=["POST"]
 )
+@login_required
 def atualizar_chamado(chamado_id):
 
     novo_status = request.form.get("status", "").strip()

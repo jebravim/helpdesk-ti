@@ -1,178 +1,42 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}Abrir Chamado{% endblock %}
 
-    <title>Novo chamado | Helpdesk TI</title>
+{% block content %}
+<h1>Abrir novo chamado</h1>
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
-    >
-</head>
+{% if erro %}
+<div class="alert-erro">{{ erro }}</div>
+{% endif %}
 
-<body>
+<form class="formulario" method="POST" action="{{ url_for('novo_chamado') }}">
+    <label for="nome">Seu nome</label>
+    <input type="text" id="nome" name="nome" required value="{{ request.form.nome or '' }}">
 
-    <div class="container">
+    <label for="setor">Setor</label>
+    <select id="setor" name="setor" required>
+        <option value="">Selecione...</option>
+        {% for s in setores %}
+        <option value="{{ s.nome }}" {% if request.form.setor == s.nome %}selected{% endif %}>
+            {{ s.nome }}
+        </option>
+        {% endfor %}
+    </select>
 
-        <div class="card">
+    <label for="prioridade">Prioridade</label>
+    <select id="prioridade" name="prioridade" required>
+        <option value="baixa" {% if request.form.prioridade == 'baixa' %}selected{% endif %}>Baixa</option>
+        <option value="media" {% if not request.form.prioridade or request.form.prioridade == 'media' %}selected{% endif %}>Média</option>
+        <option value="alta" {% if request.form.prioridade == 'alta' %}selected{% endif %}>Alta</option>
+        <option value="urgente" {% if request.form.prioridade == 'urgente' %}selected{% endif %}>Urgente</option>
+    </select>
 
-            <h1>Novo chamado</h1>
+    <label for="titulo">Título</label>
+    <input type="text" id="titulo" name="titulo" required value="{{ request.form.titulo or '' }}">
 
-            <p>
-                Preencha os dados abaixo para registrar seu chamado.
-            </p>
+    <label for="descricao">Descrição</label>
+    <textarea id="descricao" name="descricao" rows="5" required>{{ request.form.descricao or '' }}</textarea>
 
-            {% if erro %}
-                <div class="alert alert-danger">
-                    {{ erro }}
-                </div>
-            {% endif %}
-
-            <form method="POST">
-
-                <!-- TÍTULO -->
-                <div class="form-group">
-
-                    <label for="titulo">
-                        Título
-                    </label>
-
-                    <input
-                        type="text"
-                        id="titulo"
-                        name="titulo"
-                        placeholder="Digite o título do chamado"
-                        required
-                    >
-
-                </div>
-
-
-                <!-- DESCRIÇÃO -->
-                <div class="form-group">
-
-                    <label for="descricao">
-                        Descrição
-                    </label>
-
-                    <textarea
-                        id="descricao"
-                        name="descricao"
-                        rows="6"
-                        placeholder="Descreva o problema ou solicitação"
-                        required
-                    ></textarea>
-
-                </div>
-
-
-                <!-- NOME -->
-                <div class="form-group">
-
-                    <label for="nome">
-                        Nome
-                    </label>
-
-                    <input
-                        type="text"
-                        id="nome"
-                        name="nome"
-                        placeholder="Digite seu nome"
-                        required
-                    >
-
-                </div>
-
-
-                <!-- SETOR -->
-                <div class="form-group">
-
-                    <label for="setor">
-                        Setor
-                    </label>
-
-                    <select
-                        id="setor"
-                        name="setor"
-                        required
-                    >
-
-                        <option value="">
-                            Selecione seu setor
-                        </option>
-
-                        {% for setor in setores %}
-
-                            <option value="{{ setor.setor }}">
-                                {{ setor.setor }}
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <!-- PRIORIDADE -->
-                <div class="form-group">
-
-                    <label for="prioridade">
-                        Prioridade
-                    </label>
-
-                    <select
-                        id="prioridade"
-                        name="prioridade"
-                        required
-                    >
-
-                        <option value="">
-                            Selecione a prioridade
-                        </option>
-
-                        <option value="baixa">
-                            Baixa
-                        </option>
-
-                        <option value="media">
-                            Média
-                        </option>
-
-                        <option value="alta">
-                            Alta
-                        </option>
-
-                        <option value="critica">
-                            Crítica
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <!-- BOTÃO -->
-                <div class="form-actions">
-
-                    <button
-                        type="submit"
-                        class="btn-primary"
-                    >
-                        Registrar chamado
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </div>
-
-</body>
-
-</html>
+    <button type="submit" class="btn-primario">Abrir chamado</button>
+</form>
+{% endblock %}

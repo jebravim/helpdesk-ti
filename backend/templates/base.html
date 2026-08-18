@@ -8,8 +8,23 @@
 </head>
 <body>
     <header class="topbar">
-        <a href="{{ url_for('index') }}" class="logo">🖥️ Helpdesk TI</a>
-        <a href="{{ url_for('novo_chamado') }}" class="btn-novo">+ Novo Chamado</a>
+        <a href="{{ url_for('inicio') }}" class="logo">🖥️ Helpdesk TI</a>
+        <nav class="nav-links">
+            {% if request.endpoint != 'meus_chamados' %}
+            <a href="{{ url_for('meus_chamados') }}" class="btn-novo">Acompanhar Chamado</a>
+            {% endif %}
+            {% if request.endpoint != 'novo_chamado' %}
+            <a href="{{ url_for('novo_chamado') }}" class="btn-novo">+ Novo Chamado</a>
+            {% endif %}
+            {% if session.get('usuario_id') %}
+                {% if request.endpoint != 'dashboard_tecnico' %}
+                <a href="{{ url_for('dashboard_tecnico') }}" class="btn-novo">Dashboard</a>
+                {% endif %}
+                <a href="{{ url_for('tecnico_logout') }}" class="btn-novo">Sair ({{ session.get('usuario_nome') }})</a>
+            {% elif request.endpoint != 'tecnico_login' %}
+                <a href="{{ url_for('tecnico_login') }}" class="btn-novo">Área do Técnico</a>
+            {% endif %}
+        </nav>
     </header>
     <main class="container">
         {% block content %}{% endblock %}

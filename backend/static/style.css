@@ -192,3 +192,43 @@ tbody tr:hover { background: #f8fafc; }
     .cards { grid-template-columns: repeat(2, 1fr); }
     .detalhes-grid { grid-template-columns: 1fr; }
 }
+
+/* Usada em novo_chamado.html e meus_chamados.html
+   quando a validação do formulário falha (variável "erro") */
+.alert-erro {
+    background: #fdecea;
+    color: #b91c1c;
+    border-left: 4px solid #e74c3c;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+}
+ 
+/* Usada em chamado_criado.html para destacar o
+   código de acompanhamento gerado */
+.codigo-destaque {
+    display: inline-block;
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+    font-weight: 700;
+    background: white;
+    color: #1e3a5f;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin: 16px 0;
+}
+
+/*Usada em base.html para alinhar os links do header lado a lado. */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Dá espaço abaixo do .formulario quando ele é seguido
+   por outro elemento (como a tabela de resultados). */
+.formulario {
+    margin-bottom: 24px;
+}
