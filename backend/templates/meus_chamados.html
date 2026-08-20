@@ -3,26 +3,56 @@
 {% block title %}Meus Chamados{% endblock %}
 
 {% block content %}
+
 <h1>Acompanhar chamado</h1>
 
 {% if erro %}
-<div class="alert-erro">{{ erro }}</div>
+<div class="alert-erro">
+    {{ erro }}
+</div>
 {% endif %}
 
+
 <form class="formulario" method="POST" action="{{ url_for('meus_chamados') }}">
+
     <label for="nome">Seu nome</label>
-    <input type="text" id="nome" name="nome" required value="{{ nome }}">
 
-    <label for="codigo_acompanhamento">Código de acompanhamento (opcional)</label>
-    <input type="text" id="codigo_acompanhamento" name="codigo_acompanhamento" value="{{ codigo }}">
+    <input
+        type="text"
+        id="nome"
+        name="nome"
+        required
+        value="{{ nome }}"
+    >
 
-    <button type="submit" class="btn-primario">Buscar</button>
+
+    <label for="codigo_acompanhamento">
+        Código de acompanhamento (opcional)
+    </label>
+
+    <input
+        type="text"
+        id="codigo_acompanhamento"
+        name="codigo_acompanhamento"
+        value="{{ codigo }}"
+    >
+
+
+    <button type="submit" class="btn-primario">
+        Buscar
+    </button>
+
 </form>
 
+
 {% if chamados %}
+
 <div class="tabela-wrapper">
+
     <table>
+
         <thead>
+
             <tr>
                 <th>Código</th>
                 <th>Título</th>
@@ -31,30 +61,153 @@
                 <th>Aberto em</th>
                 <th>Fechado em</th>
             </tr>
+
         </thead>
+
+
         <tbody>
+
             {% for c in chamados %}
+
             <tr>
-                <td>{{ c.codigo_acompanhamento }}</td>
-                <td>{{ c.titulo }}</td>
+
                 <td>
-                    <span class="badge badge-{{ c.status }}">
-                        {% if c.status == 'aberto' %}Aberto
-                        {% elif c.status == 'em_andamento' %}Em andamento
-                        {% elif c.status == 'fechado' %}Fechado
-                        {% else %}{{ c.status }}
-                        {% endif %}
-                    </span>
+                    {{ c.codigo_acompanhamento }}
                 </td>
-                <td><span class="badge badge-{{ c.prioridade }}">{{ c.prioridade|capitalize }}</span></td>
-                <td>{{ c.data_abertura.strftime('%d/%m/%Y %H:%M') if c.data_abertura else '-' }}</td>
-                <td>{{ c.data_fechamento.strftime('%d/%m/%Y %H:%M') if c.data_fechamento else '-' }}</td>
+
+
+                <td>
+                    {{ c.titulo }}
+                </td>
+
+
+                <td>
+
+                    <span class="badge badge-{{ c.status }}">
+
+                        {% if c.status == 'aberto' %}
+                            Aberto
+
+                        {% elif c.status == 'em_andamento' %}
+                            Em andamento
+
+                        {% elif c.status == 'fechado' %}
+                            Fechado
+
+                        {% else %}
+                            {{ c.status }}
+
+                        {% endif %}
+
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    <span class="badge badge-{{ c.prioridade }}">
+                        {{ c.prioridade|capitalize }}
+                    </span>
+
+                </td>
+
+
+                <td>
+                    {{ c.data_abertura.strftime('%d/%m/%Y %H:%M')
+                       if c.data_abertura else '-' }}
+                </td>
+
+
+                <td>
+                    {{ c.data_fechamento.strftime('%d/%m/%Y %H:%M')
+                       if c.data_fechamento else '-' }}
+                </td>
+
             </tr>
+
+
+            <!-- ========================================= -->
+            <!-- HISTÓRICO DO CHAMADO                      -->
+            <!-- ========================================= -->
+
+            <tr>
+
+                <td colspan="6">
+
+                    <div class="historico-chamado">
+
+                        <h3>
+                            Histórico da resolução
+                        </h3>
+
+
+                        {% if c.historico %}
+
+                            {% for h in c.historico %}
+
+                            <div class="historico-item">
+
+                                <div class="historico-cabecalho">
+
+                                    <strong>
+                                        {{ h.autor or 'Equipe de TI' }}
+                                    </strong>
+
+                                    <span>
+                                        {{ h.data.strftime('%d/%m/%Y %H:%M')
+                                           if h.data else '-' }}
+                                    </span>
+
+                                </div>
+
+
+                                <div class="historico-comentario">
+
+                                    {{ h.comentario }}
+
+                                </div>
+
+                            </div>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <p class="historico-vazio">
+                                Ainda não há informações sobre a resolução
+                                deste chamado.
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                </td>
+
+            </tr>
+
             {% endfor %}
+
         </tbody>
+
     </table>
+
 </div>
+
+
 {% elif nome %}
-<p class="vazio">Nenhum chamado encontrado para "{{ nome }}"{% if codigo %} com o código informado{% endif %}.</p>
+
+<p class="vazio">
+
+    Nenhum chamado encontrado para "{{ nome }}"
+
+    {% if codigo %}
+        com o código informado
+    {% endif %}.
+
+</p>
+
 {% endif %}
+
 {% endblock %}

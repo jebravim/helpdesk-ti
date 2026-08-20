@@ -289,28 +289,52 @@ def meus_chamados():
         else:
             sql = """
                 SELECT
-                    id,
-                    titulo,
-                    descricao,
-                    prioridade,
-                    status,
-                    solicitante_nome,
-                    solicitante_setor,
-                    data_abertura,
-                    data_fechamento,
-                    codigo_acompanhamento
-                FROM chamados
-                WHERE solicitante_nome ILIKE %s
+                    c.id,
+                    c.titulo,
+                    c.descricao,
+                    c.prioridade,
+                    c.status,
+                    c.solicitante_nome,
+                    c.solicitante_setor,
+                    c.data_abertura,
+                    c.data_fechamento,
+                    c.codigo_acompanhamento
+                FROM chamados c
+                WHERE c.solicitante_nome ILIKE %s
             """
+
             params = [nome]
 
             if codigo:
-                sql += " AND codigo_acompanhamento = %s"
+                sql += " AND c.codigo_acompanhamento = %s"
                 params.append(codigo)
 
-            sql += " ORDER BY data_abertura DESC"
+            sql += " ORDER BY c.data_abertura DESC"
 
             chamados = query(sql, params)
+
+            # ------------------------------------------------
+            # Busca o histórico de cada chamado encontrado
+            # ------------------------------------------------
+
+            for chamado in chamados:
+
+                historico = query(
+                    """
+                    SELECT
+                        h.comentario,
+                        h.data,
+                        u.nome AS autor
+                    FROM historico_chamados h
+                    LEFT JOIN usuarios u
+                        ON h.autor_id = u.id
+                    WHERE h.chamado_id = %s
+                    ORDER BY h.data ASC
+                    """,
+                    (chamado["id"],)
+                )
+
+                chamado["historico"] = historico
 
     return render_template(
         "meus_chamados.html",
@@ -319,12 +343,10 @@ def meus_chamados():
         codigo=codigo,
         erro=erro,
     )
-
-
 # ============================================================
 # GERENCIAR TÉCNICOS (SOMENTE ADMIN)
 # ============================================================
-# NOVO: CRUD de usuários técnicos/admin. Só quem tem
+# CRUD de usuários técnicos/admin. Só quem tem
 # session["usuario_tipo"] == "admin" acessa.
 # ============================================================
 
