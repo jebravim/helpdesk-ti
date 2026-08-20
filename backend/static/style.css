@@ -232,3 +232,20 @@ tbody tr:hover { background: #f8fafc; }
 .formulario {
     margin-bottom: 24px;
 }
+
+/* Agrupa o input de busca por ID com o select de ordenar
+   em .filtros, formando uma única caixa visual. */
+.busca-ordenar {
+    display: inline-flex;
+    margin-right: 8px;
+}
+
+.busca-ordenar input {
+    border-radius: 6px 0 0 6px;
+    border-right: none;
+    width: 130px;
+}
+
+.busca-ordenar select {
+    border-radius: 0 6px 6px 0;
+}

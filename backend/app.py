@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 from functools import wraps
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from database import query
 from config import SECRET_KEY
+from datetime import datetime
 import secrets
 
 app = Flask(__name__)
@@ -12,7 +13,7 @@ app.secret_key = SECRET_KEY
 # ============================================================
 # LOGIN (TÉCNICO/ADMIN)
 # ============================================================
-# Proteção por sessão para a área do técnico.
+# NOVO: proteção por sessão para a área do técnico.
 # ============================================================
 
 def login_required(f):
@@ -20,6 +21,17 @@ def login_required(f):
     def decorated(*args, **kwargs):
         if not session.get("usuario_id"):
             return redirect(url_for("tecnico_login", proximo=request.path))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("usuario_id"):
+            return redirect(url_for("tecnico_login", proximo=request.path))
+        if session.get("usuario_tipo") != "admin":
+            return "Acesso restrito a administradores.", 403
         return f(*args, **kwargs)
     return decorated
 
@@ -69,6 +81,61 @@ def tecnico_logout():
 
 
 # ============================================================
+# CRIAR SENHA (PRIMEIRO ACESSO DO TÉCNICO)
+# ============================================================
+# NOVO: só permite definir senha se o usuário já existe (cadastrado
+# pelo admin direto no banco, com email/nome/tipo) e ainda não tem
+# senha_hash definido. Evita que alguém sobrescreva senha alheia.
+# ============================================================
+
+@app.route("/tecnico/criar-senha", methods=["GET", "POST"])
+def criar_senha_tecnico():
+
+    erro = None
+    sucesso = False
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        senha = request.form.get("senha", "").strip()
+        confirmar = request.form.get("confirmar", "").strip()
+
+        if not email or not senha or not confirmar:
+            erro = "Preencha todos os campos."
+        elif senha != confirmar:
+            erro = "As senhas não coincidem."
+        elif len(senha) < 6:
+            erro = "A senha precisa ter pelo menos 6 caracteres."
+        else:
+            usuario = query(
+                """
+                SELECT id, senha_hash
+                FROM usuarios
+                WHERE email = %s
+                  AND tipo IN ('tecnico', 'admin')
+                """,
+                (email,),
+            )
+
+            if not usuario:
+                erro = "E-mail não encontrado. Fale com o administrador do sistema."
+            elif usuario[0]["senha_hash"]:
+                erro = "Este usuário já tem uma senha definida. Faça login normalmente."
+            else:
+                query(
+                    "UPDATE usuarios SET senha_hash = %s WHERE id = %s",
+                    (generate_password_hash(senha), usuario[0]["id"]),
+                    fetch=False,
+                )
+                sucesso = True
+
+    return render_template(
+        "criar_senha_tecnico.html",
+        erro=erro,
+        sucesso=sucesso,
+    )
+
+
+# ============================================================
 # INÍCIO
 # ============================================================
 
@@ -106,7 +173,7 @@ def novo_chamado():
 
         if not titulo or not descricao or not nome or not setor or not prioridade:
 
-            # Setores agora vêm da tabela dedicada "setores"
+            # ATUALIZADO: setores agora vêm da tabela dedicada "setores"
             setores = query("SELECT id, nome FROM setores ORDER BY nome")
 
             return render_template(
@@ -116,13 +183,8 @@ def novo_chamado():
             )
 
         # ----------------------------------------------------
-        # Gera código único de acompanhamento
-        # ----------------------------------------------------
-
-        codigo = secrets.token_urlsafe(12)
-
-        # ----------------------------------------------------
-        # Cria o chamado
+        # Cria o chamado (código é preenchido em seguida,
+        # pois depende do id gerado pelo banco)
         # ----------------------------------------------------
 
         chamado = query(
@@ -135,8 +197,7 @@ def novo_chamado():
                 solicitante_nome,
                 solicitante_setor,
                 data_abertura,
-                data_fechamento,
-                codigo_acompanhamento
+                data_fechamento
             )
             VALUES (
                 %s,
@@ -146,10 +207,9 @@ def novo_chamado():
                 %s,
                 %s,
                 NOW(),
-                NULL,
-                %s
+                NULL
             )
-            RETURNING id, codigo_acompanhamento
+            RETURNING id
             """,
             (
                 titulo,
@@ -157,16 +217,23 @@ def novo_chamado():
                 prioridade,
                 nome,
                 setor,
-                codigo
             ),
         )
 
+        chamado_id = chamado[0]["id"]
+
         # ----------------------------------------------------
-        # Recupera os dados criados
+        # NOVO: código com padrão CH-<ano>-<id com 5 dígitos>
+        # em vez de string aleatória (ex: CH-2026-00001)
         # ----------------------------------------------------
 
-        chamado_id = chamado[0]["id"]
-        codigo_acompanhamento = chamado[0]["codigo_acompanhamento"]
+        codigo_acompanhamento = f"CH-{datetime.now().year}-{chamado_id:05d}"
+
+        query(
+            "UPDATE chamados SET codigo_acompanhamento = %s WHERE id = %s",
+            (codigo_acompanhamento, chamado_id),
+            fetch=False,
+        )
 
         # ----------------------------------------------------
         # Vai para a tela de confirmação
@@ -184,7 +251,7 @@ def novo_chamado():
     # GET - carregar setores
     # --------------------------------------------------------
 
-    # Setores vêm da tabela dedicada "setores"
+    # ATUALIZADO: setores agora vêm da tabela dedicada "setores"
     setores = query("SELECT id, nome FROM setores ORDER BY nome")
 
     return render_template(
@@ -196,7 +263,7 @@ def novo_chamado():
 # ============================================================
 # ACOMPANHAMENTO DE CHAMADOS
 # ============================================================
-# A busca é por nome (obrigatório), com o
+# ATUALIZADO: busca agora é por nome (obrigatório), com o
 # código de acompanhamento como filtro opcional para desempatar
 # nomes repetidos.
 # ============================================================
@@ -255,6 +322,196 @@ def meus_chamados():
 
 
 # ============================================================
+# GERENCIAR TÉCNICOS (SOMENTE ADMIN)
+# ============================================================
+# NOVO: CRUD de usuários técnicos/admin. Só quem tem
+# session["usuario_tipo"] == "admin" acessa.
+# ============================================================
+
+@app.route("/tecnico/gerenciar", methods=["GET", "POST"])
+@admin_required
+def gerenciar_tecnicos():
+
+    erro = None
+
+    if request.method == "POST":
+        nome = request.form.get("nome", "").strip()
+        email = request.form.get("email", "").strip()
+        setor = request.form.get("setor", "").strip()
+        tipo = request.form.get("tipo", "tecnico").strip()
+        senha = request.form.get("senha", "").strip()
+
+        if not nome or not email:
+            erro = "Nome e e-mail são obrigatórios."
+        elif tipo not in ("tecnico", "admin"):
+            erro = "Tipo inválido."
+        else:
+            existe = query("SELECT id FROM usuarios WHERE email = %s", (email,))
+
+            if existe:
+                erro = "Já existe um usuário com esse e-mail."
+            else:
+                senha_hash = generate_password_hash(senha) if senha else None
+
+                query(
+                    """
+                    INSERT INTO usuarios (nome, email, setor, tipo, senha_hash)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (nome, email, setor or None, tipo, senha_hash),
+                    fetch=False,
+                )
+
+    tecnicos = query(
+        """
+        SELECT
+            id,
+            nome,
+            email,
+            setor,
+            tipo,
+            (senha_hash IS NOT NULL) AS tem_senha
+        FROM usuarios
+        WHERE tipo IN ('tecnico', 'admin')
+        ORDER BY nome
+        """
+    )
+
+    return render_template(
+        "tecnicos.html",
+        tecnicos=tecnicos,
+        erro=erro,
+    )
+
+
+@app.route("/tecnico/gerenciar/<int:usuario_id>/editar", methods=["GET", "POST"])
+@admin_required
+def editar_tecnico(usuario_id):
+
+    erro = None
+
+    resultado = query(
+        "SELECT id, nome, email, setor, tipo FROM usuarios WHERE id = %s",
+        (usuario_id,),
+    )
+
+    if not resultado:
+        return "Técnico não encontrado.", 404
+
+    tecnico = resultado[0]
+
+    if request.method == "POST":
+        nome = request.form.get("nome", "").strip()
+        email = request.form.get("email", "").strip()
+        setor = request.form.get("setor", "").strip()
+        tipo = request.form.get("tipo", "tecnico").strip()
+        nova_senha = request.form.get("senha", "").strip()
+
+        # mantém os valores digitados na tela caso dê erro
+        tecnico = {
+            "id": usuario_id,
+            "nome": nome,
+            "email": email,
+            "setor": setor,
+            "tipo": tipo,
+        }
+
+        if not nome or not email:
+            erro = "Nome e e-mail são obrigatórios."
+        elif tipo not in ("tecnico", "admin"):
+            erro = "Tipo inválido."
+        else:
+            duplicado = query(
+                "SELECT id FROM usuarios WHERE email = %s AND id != %s",
+                (email, usuario_id),
+            )
+
+            if duplicado:
+                erro = "Já existe outro usuário com esse e-mail."
+            else:
+                if nova_senha:
+                    query(
+                        """
+                        UPDATE usuarios
+                        SET nome = %s, email = %s, setor = %s, tipo = %s, senha_hash = %s
+                        WHERE id = %s
+                        """,
+                        (nome, email, setor or None, tipo, generate_password_hash(nova_senha), usuario_id),
+                        fetch=False,
+                    )
+                else:
+                    query(
+                        """
+                        UPDATE usuarios
+                        SET nome = %s, email = %s, setor = %s, tipo = %s
+                        WHERE id = %s
+                        """,
+                        (nome, email, setor or None, tipo, usuario_id),
+                        fetch=False,
+                    )
+
+                return redirect(url_for("gerenciar_tecnicos"))
+
+    return render_template(
+        "editar_tecnico.html",
+        tecnico=tecnico,
+        erro=erro,
+    )
+
+
+@app.route("/tecnico/gerenciar/<int:usuario_id>/excluir", methods=["POST"])
+@admin_required
+def excluir_tecnico(usuario_id):
+
+    # Evita que o admin logado se auto-exclua sem querer
+    if usuario_id == session.get("usuario_id"):
+        return "Você não pode excluir a própria conta enquanto está logado.", 400
+
+    query("DELETE FROM usuarios WHERE id = %s", (usuario_id,), fetch=False)
+
+    return redirect(url_for("gerenciar_tecnicos"))
+
+
+# ============================================================
+# GERENCIAR SETORES (ÁREA DO TÉCNICO)
+# ============================================================
+# NOVO: permite ao técnico logado cadastrar novos setores,
+# usados no dropdown da tela de abertura de chamado.
+# ============================================================
+
+@app.route("/tecnico/setores", methods=["GET", "POST"])
+@login_required
+def gerenciar_setores():
+
+    erro = None
+
+    if request.method == "POST":
+        nome = request.form.get("nome", "").strip()
+
+        if not nome:
+            erro = "Informe o nome do setor."
+        else:
+            existe = query("SELECT id FROM setores WHERE nome ILIKE %s", (nome,))
+
+            if existe:
+                erro = "Esse setor já existe."
+            else:
+                query(
+                    "INSERT INTO setores (nome) VALUES (%s)",
+                    (nome,),
+                    fetch=False,
+                )
+
+    setores = query("SELECT id, nome FROM setores ORDER BY nome")
+
+    return render_template(
+        "setores.html",
+        setores=setores,
+        erro=erro,
+    )
+
+
+# ============================================================
 # DASHBOARD DOS TÉCNICOS
 # ============================================================
 
@@ -264,6 +521,30 @@ def dashboard_tecnico():
 
     status_filtro = request.args.get("status", "")
     prioridade_filtro = request.args.get("prioridade", "")
+    id_filtro = request.args.get("id", "").strip()
+    ordenar = request.args.get("ordenar", "recentes")
+
+    # NOVO: whitelist de ordenação, para nunca montar ORDER BY
+    # com texto vindo direto da URL (evita SQL injection).
+    ORDENACOES = {
+        "recentes": "c.data_abertura DESC",
+        "antigos": "c.data_abertura ASC",
+        "id_desc": "c.id DESC",
+        "id_asc": "c.id ASC",
+        "prioridade": """
+            CASE c.prioridade
+                WHEN 'urgente' THEN 1
+                WHEN 'alta' THEN 2
+                WHEN 'media' THEN 3
+                WHEN 'baixa' THEN 4
+                ELSE 5
+            END
+        """,
+        "status": "c.status ASC",
+    }
+
+    if ordenar not in ORDENACOES:
+        ordenar = "recentes"
 
     sql = """
         SELECT
@@ -292,6 +573,10 @@ def dashboard_tecnico():
 
     params = []
 
+    if id_filtro.isdigit():
+        sql += " AND c.id = %s"
+        params.append(int(id_filtro))
+
     if status_filtro:
         sql += " AND c.status = %s"
         params.append(status_filtro)
@@ -300,7 +585,7 @@ def dashboard_tecnico():
         sql += " AND c.prioridade = %s"
         params.append(prioridade_filtro)
 
-    sql += " ORDER BY c.data_abertura DESC"
+    sql += f" ORDER BY {ORDENACOES[ordenar]}"
 
     chamados = query(sql, params)
 
@@ -356,6 +641,8 @@ def dashboard_tecnico():
         media_horas=media_horas,
         status_filtro=status_filtro,
         prioridade_filtro=prioridade_filtro,
+        id_filtro=id_filtro,
+        ordenar=ordenar,
     )
 
 
@@ -445,12 +732,18 @@ def atualizar_chamado(chamado_id):
     # --------------------------------------------------------
 
     if not novo_status:
-        return "Status não informado.", 400
+        flash("Status não informado.", "erro")
+        return redirect(url_for("detalhes_chamado", chamado_id=chamado_id))
 
-    # Para assumir ou atualizar o chamado,
-    # o técnico precisa informar o próprio nome.
+    # Para colocar em andamento ou fechar, o chamado precisa
+    # ter um técnico atribuído.
     if novo_status in ("em_andamento", "fechado") and not tecnico_nome:
-        return "Informe o nome do técnico.", 400
+        flash(
+            "Para colocar o chamado em andamento ou fechá-lo, "
+            "é necessário atribuir um técnico responsável primeiro.",
+            "erro",
+        )
+        return redirect(url_for("detalhes_chamado", chamado_id=chamado_id))
 
     # --------------------------------------------------------
     # Chamado fechado
@@ -560,8 +853,6 @@ def api_criar_chamado():
 
     dados = request.get_json()
 
-    codigo = secrets.token_urlsafe(12)
-
     novo = query(
         """
         INSERT INTO chamados (
@@ -571,8 +862,7 @@ def api_criar_chamado():
             status,
             solicitante_nome,
             solicitante_setor,
-            data_abertura,
-            codigo_acompanhamento
+            data_abertura
         )
 
         VALUES (
@@ -582,11 +872,10 @@ def api_criar_chamado():
             'aberto',
             %s,
             %s,
-            NOW(),
-            %s
+            NOW()
         )
 
-        RETURNING id, codigo_acompanhamento
+        RETURNING id
         """,
         (
             dados.get("titulo"),
@@ -594,11 +883,21 @@ def api_criar_chamado():
             dados.get("prioridade", "media"),
             dados.get("solicitante_nome"),
             dados.get("solicitante_setor"),
-            codigo,
         ),
     )
 
-    return jsonify(novo), 201
+    chamado_id = novo[0]["id"]
+
+    # NOVO: mesmo padrão de código usado na tela do solicitante
+    codigo = f"CH-{datetime.now().year}-{chamado_id:05d}"
+
+    query(
+        "UPDATE chamados SET codigo_acompanhamento = %s WHERE id = %s",
+        (codigo, chamado_id),
+        fetch=False,
+    )
+
+    return jsonify({"id": chamado_id, "codigo_acompanhamento": codigo}), 201
 
 
 # ============================================================

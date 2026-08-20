@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Senha{% endblock %}
+
+{% block content %}
+<h1>Criar senha de acesso</h1>
+
+{% if sucesso %}
+<div class="formulario">
+    <p>Senha criada com sucesso!</p>
+    <a href="{{ url_for('tecnico_login') }}" class="btn-primario">Ir para o login</a>
+</div>
+{% else %}
+
+    {% if erro %}
+    <div class="alert-erro">{{ erro }}</div>
+    {% endif %}
+
+    <form class="formulario" method="POST" action="{{ url_for('criar_senha_tecnico') }}">
+        <label for="email">Seu e-mail (já cadastrado pelo administrador)</label>
+        <input type="email" id="email" name="email" required autofocus>
+
+        <label for="senha">Nova senha</label>
+        <input type="password" id="senha" name="senha" required minlength="6">
+
+        <label for="confirmar">Confirmar senha</label>
+        <input type="password" id="confirmar" name="confirmar" required minlength="6">
+
+        <button type="submit" class="btn-primario">Criar senha</button>
+    </form>
+
+{% endif %}
+
+<a href="{{ url_for('tecnico_login') }}" class="voltar">← Voltar para o login</a>
+{% endblock %}

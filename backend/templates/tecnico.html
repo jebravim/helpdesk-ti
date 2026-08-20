@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Técnicos{% endblock %}
+
+{% block content %}
+<h1>Gerenciar técnicos</h1>
+
+{% if erro %}
+<div class="alert-erro">{{ erro }}</div>
+{% endif %}
+
+<form class="formulario" method="POST" action="{{ url_for('gerenciar_tecnicos') }}">
+    <label for="nome">Nome</label>
+    <input type="text" id="nome" name="nome" required>
+
+    <label for="email">E-mail</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="setor">Setor (opcional)</label>
+    <input type="text" id="setor" name="setor">
+
+    <label for="tipo">Permissão</label>
+    <select id="tipo" name="tipo">
+        <option value="tecnico" selected>Técnico</option>
+        <option value="admin">Admin</option>
+    </select>
+
+    <label for="senha">Senha inicial (opcional)</label>
+    <input type="password" id="senha" name="senha" minlength="6"
+           placeholder="Deixe em branco para o próprio técnico criar depois">
+
+    <button type="submit" class="btn-primario">Adicionar técnico</button>
+</form>
+
+{% if tecnicos %}
+<div class="tabela-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Setor</th>
+                <th>Permissão</th>
+                <th>Senha definida</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in tecnicos %}
+            <tr>
+                <td>{{ t.nome }}</td>
+                <td>{{ t.email }}</td>
+                <td>{{ t.setor or '-' }}</td>
+                <td><span class="badge badge-media">{{ t.tipo }}</span></td>
+                <td>{{ 'Sim' if t.tem_senha else 'Não' }}</td>
+                <td>
+                    <a href="{{ url_for('editar_tecnico', usuario_id=t.id) }}" class="voltar">Editar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="vazio">Nenhum técnico cadastrado ainda.</p>
+{% endif %}
+{% endblock %}

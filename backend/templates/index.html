@@ -23,6 +23,14 @@
 
 <section class="filtros">
     <form method="get">
+        <div class="busca-ordenar">
+            <input type="number" name="id" placeholder="Buscar por ID" min="1"
+                   value="{{ id_filtro }}">
+            <select name="ordenar" onchange="this.form.submit()">
+                <option value="id_asc" {% if ordenar == 'id_asc' %}selected{% endif %}>ID (menor primeiro)</option>
+                <option value="id_desc" {% if ordenar == 'id_desc' %}selected{% endif %}>ID (maior primeiro)</option>
+            </select>
+        </div>
         <select name="status" onchange="this.form.submit()">
             <option value="">Todos os status</option>
             <option value="aberto" {% if status_filtro == 'aberto' %}selected{% endif %}>Aberto</option>
@@ -35,6 +43,7 @@
             <option value="media" {% if prioridade_filtro == 'media' %}selected{% endif %}>Média</option>
             <option value="alta" {% if prioridade_filtro == 'alta' %}selected{% endif %}>Alta</option>
         </select>
+        <button type="submit" class="btn-novo">Filtrar</button>
     </form>
 </section>
 
@@ -42,9 +51,10 @@
     <table>
         <thead>
             <tr>
-                <th>#</th>
+                <th>ID</th>
                 <th>Título</th>
                 <th>Solicitante</th>
+                <th>Setor</th>
                 <th>Técnico</th>
                 <th>Prioridade</th>
                 <th>Status</th>
@@ -54,16 +64,17 @@
         <tbody>
             {% for c in chamados %}
             <tr onclick="window.location='{{ url_for('detalhes_chamado', chamado_id=c.id) }}'">
-                <td>#{{ c.id }}</td>
+                <td>{{ c.id }}</td>
                 <td>{{ c.titulo }}</td>
-                <td>{{ c.solicitante or "—" }}</td>
+                <td>{{ c.solicitante_nome or "—" }}</td>
+                <td>{{ c.solicitante_setor or "—" }}</td>
                 <td>{{ c.tecnico or "Não atribuído" }}</td>
                 <td><span class="badge badge-{{ c.prioridade }}">{{ c.prioridade }}</span></td>
                 <td><span class="badge badge-{{ c.status }}">{{ c.status.replace('_', ' ') }}</span></td>
                 <td>{{ c.data_abertura.strftime('%d/%m/%Y %H:%M') }}</td>
             </tr>
             {% else %}
-            <tr><td colspan="7" class="vazio">Nenhum chamado encontrado.</td></tr>
+            <tr><td colspan="8" class="vazio">Nenhum chamado encontrado.</td></tr>
             {% endfor %}
         </tbody>
     </table>

@@ -3,7 +3,7 @@
 {% block content %}
 
 {% if chamado %}
-<a href="{{ url_for('index') }}" class="voltar">&larr; Voltar</a>
+<a href="{{ url_for('inicio') }}" class="voltar">&larr; Voltar</a>
 
 <h1>#{{ chamado.id }} — {{ chamado.titulo }}</h1>
 <div class="tags">
@@ -18,7 +18,8 @@
 
         <h3>Informações</h3>
         <ul class="info-list">
-            <li><strong>Solicitante:</strong> {{ chamado.solicitante or "—" }}</li>
+            <li><strong>Solicitante:</strong> {{ chamado.solicitante_nome or "—" }}</li>
+            <li><strong>Setor:</strong> {{ chamado.solicitante_setor or "—" }}</li>
             <li><strong>Técnico responsável:</strong> {{ chamado.tecnico or "Não atribuído" }}</li>
             <li><strong>Equipamento:</strong>
                 {% if chamado.equipamento_tipo %}
@@ -50,12 +51,14 @@
         <h3>Atualizar chamado</h3>
         <form method="post" action="{{ url_for('atualizar_chamado', chamado_id=chamado.id) }}">
             <label for="tecnico_id">Atribuir técnico</label>
-            <select id="tecnico_id" name="tecnico_id">
+            <select id="tecnico_id" name="tecnico_id"
+                onchange="document.getElementById('tecnico_nome_oculto').value = (this.selectedIndex > 0) ? this.options[this.selectedIndex].text : '';">
                 <option value="">Não atribuído</option>
                 {% for t in tecnicos %}
-                <option value="{{ t.id }}">{{ t.nome }}</option>
+                <option value="{{ t.id }}" {% if chamado.tecnico_id == t.id %}selected{% endif %}>{{ t.nome }}</option>
                 {% endfor %}
             </select>
+            <input type="hidden" id="tecnico_nome_oculto" name="tecnico_nome" value="{{ chamado.tecnico or '' }}">
 
             <label for="status">Status</label>
             <select id="status" name="status">

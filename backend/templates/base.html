@@ -20,6 +20,12 @@
                 {% if request.endpoint != 'dashboard_tecnico' %}
                 <a href="{{ url_for('dashboard_tecnico') }}" class="btn-novo">Dashboard</a>
                 {% endif %}
+                {% if request.endpoint != 'gerenciar_setores' %}
+                <a href="{{ url_for('gerenciar_setores') }}" class="btn-novo">Setores</a>
+                {% endif %}
+                {% if session.get('usuario_tipo') == 'admin' and request.endpoint != 'gerenciar_tecnicos' %}
+                <a href="{{ url_for('gerenciar_tecnicos') }}" class="btn-novo">Técnicos</a>
+                {% endif %}
                 <a href="{{ url_for('tecnico_logout') }}" class="btn-novo">Sair ({{ session.get('usuario_nome') }})</a>
             {% elif request.endpoint != 'tecnico_login' %}
                 <a href="{{ url_for('tecnico_login') }}" class="btn-novo">Área do Técnico</a>
@@ -27,6 +33,11 @@
         </nav>
     </header>
     <main class="container">
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+            {% for categoria, mensagem in mensagens %}
+            <div class="alert-erro">{{ mensagem }}</div>
+            {% endfor %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
 </body>
