@@ -1,3 +1,4 @@
+```html
 {% extends "base.html" %}
 
 {% block title %}
@@ -6,11 +7,13 @@
 
 {% block content %}
 
-<div class="chamado-detalhes">
+<h1>Detalhes do chamado</h1>
+
+<div class="chamado-card">
 
     <!-- CABEÇALHO -->
 
-    <div class="chamado-detalhes-cabecalho">
+    <div class="chamado-card-topo">
 
         <div>
 
@@ -18,9 +21,9 @@
                 {{ chamado.codigo_acompanhamento }}
             </span>
 
-            <h1>
+            <h2>
                 {{ chamado.titulo }}
-            </h1>
+            </h2>
 
         </div>
 
@@ -45,110 +48,59 @@
     </div>
 
 
-    <!-- INFORMAÇÕES DO CHAMADO -->
+    <!-- INFORMAÇÕES -->
 
-    <div class="chamado-info">
+    <div class="chamado-card-info">
 
-        <div class="info-item">
+        <div>
+            <strong>Solicitante:</strong>
+            {{ chamado.solicitante_nome }}
+        </div>
 
-            <strong>
-                Solicitante
-            </strong>
+        <div>
+            <strong>Setor:</strong>
+            {{ chamado.solicitante_setor }}
+        </div>
 
-            <span>
-                {{ chamado.solicitante_nome }}
-            </span>
+        <div>
+            <strong>Prioridade:</strong>
+            {{ chamado.prioridade|capitalize }}
+        </div>
+
+        <div>
+            <strong>Técnico responsável:</strong>
+
+            {% if chamado.tecnico_nome %}
+                {{ chamado.tecnico_nome }}
+            {% else %}
+                Ainda não atribuído
+            {% endif %}
 
         </div>
 
+        <div>
+            <strong>Aberto em:</strong>
 
-        <div class="info-item">
-
-            <strong>
-                Setor
-            </strong>
-
-            <span>
-                {{ chamado.solicitante_setor }}
-            </span>
-
-        </div>
-
-
-        <div class="info-item">
-
-            <strong>
-                Prioridade
-            </strong>
-
-            <span>
-                {{ chamado.prioridade|capitalize }}
-            </span>
+            {% if chamado.data_abertura %}
+                {{ chamado.data_abertura.strftime(
+                    '%d/%m/%Y %H:%M'
+                ) }}
+            {% else %}
+                -
+            {% endif %}
 
         </div>
 
+        <div>
+            <strong>Fechado em:</strong>
 
-        <div class="info-item">
-
-            <strong>
-                Técnico responsável
-            </strong>
-
-            <span>
-
-                {% if chamado.tecnico_nome %}
-                    {{ chamado.tecnico_nome }}
-                {% else %}
-                    Ainda não atribuído
-                {% endif %}
-
-            </span>
-
-        </div>
-
-
-        <div class="info-item">
-
-            <strong>
-                Data de abertura
-            </strong>
-
-            <span>
-
-                {% if chamado.data_abertura %}
-
-                    {{ chamado.data_abertura.strftime(
-                        '%d/%m/%Y %H:%M'
-                    ) }}
-
-                {% else %}
-                    -
-                {% endif %}
-
-            </span>
-
-        </div>
-
-
-        <div class="info-item">
-
-            <strong>
-                Data de fechamento
-            </strong>
-
-            <span>
-
-                {% if chamado.data_fechamento %}
-
-                    {{ chamado.data_fechamento.strftime(
-                        '%d/%m/%Y %H:%M'
-                    ) }}
-
-                {% else %}
-                    Ainda não fechado
-                {% endif %}
-
-            </span>
+            {% if chamado.data_fechamento %}
+                {{ chamado.data_fechamento.strftime(
+                    '%d/%m/%Y %H:%M'
+                ) }}
+            {% else %}
+                Em aberto
+            {% endif %}
 
         </div>
 
@@ -157,14 +109,16 @@
 
     <!-- DESCRIÇÃO -->
 
-    <div class="chamado-secao">
+    <div class="chamado-detalhes-secao">
 
-        <h2>
+        <h3>
             Descrição do problema
-        </h2>
+        </h3>
 
-        <div class="descricao-chamado">
+        <div class="chamado-descricao">
+
             {{ chamado.descricao }}
+
         </div>
 
     </div>
@@ -172,22 +126,22 @@
 
     <!-- HISTÓRICO -->
 
-    <div class="chamado-secao">
+    <div class="chamado-detalhes-secao">
 
-        <h2>
+        <h3>
             Histórico da resolução
-        </h2>
+        </h3>
 
 
         {% if historico %}
 
-            <div class="historico">
+            <div class="historico-lista">
 
                 {% for h in historico %}
 
                     <div class="historico-item">
 
-                        <div class="historico-cabecalho">
+                        <div class="historico-topo">
 
                             <strong>
 
@@ -202,17 +156,14 @@
                             <span>
 
                                 {% if h.data %}
-
                                     {{ h.data.strftime(
                                         '%d/%m/%Y %H:%M'
                                     ) }}
-
                                 {% endif %}
 
                             </span>
 
                         </div>
-
 
                         <div class="historico-comentario">
 
@@ -226,13 +177,12 @@
 
             </div>
 
-
         {% else %}
 
             <div class="historico-vazio">
 
                 Ainda não existem atualizações ou informações
-                de resolução para este chamado.
+                sobre a resolução deste chamado.
 
             </div>
 
@@ -241,13 +191,13 @@
     </div>
 
 
-    <!-- VOLTAR -->
+    <!-- BOTÃO VOLTAR -->
 
-    <div class="chamado-voltar">
+    <div class="chamado-card-acoes">
 
         <a
             href="{{ url_for('meus_chamados') }}"
-            class="btn-secundario"
+            class="btn-primario"
         >
             ← Voltar para meus chamados
         </a>
@@ -257,3 +207,4 @@
 </div>
 
 {% endblock %}
+```
