@@ -1,3 +1,4 @@
+```html
 {% extends "base.html" %}
 
 {% block title %}Meus Chamados{% endblock %}
@@ -11,6 +12,7 @@
         {{ erro }}
     </div>
 {% endif %}
+
 
 <form
     class="formulario"
@@ -31,7 +33,10 @@
     >
 
     <label for="codigo_acompanhamento">
-        Código de acompanhamento (opcional)
+        Código de acompanhamento
+        <span style="font-weight: normal;">
+            (opcional)
+        </span>
     </label>
 
     <input
@@ -60,6 +65,8 @@
 
             <div class="chamado-card">
 
+                <!-- CABEÇALHO -->
+
                 <div class="chamado-card-topo">
 
                     <div>
@@ -74,18 +81,23 @@
 
                     </div>
 
+
                     <span class="badge badge-{{ c.status }}">
 
                         {% if c.status == "aberto" %}
+
                             Aberto
 
                         {% elif c.status == "em_andamento" %}
+
                             Em andamento
 
                         {% elif c.status == "fechado" %}
+
                             Fechado
 
                         {% else %}
+
                             {{ c.status }}
 
                         {% endif %}
@@ -95,40 +107,76 @@
                 </div>
 
 
+                <!-- INFORMAÇÕES -->
+
                 <div class="chamado-card-info">
 
                     <div>
-                        <strong>Prioridade:</strong>
 
-                        {{ c.prioridade|capitalize }}
+                        <strong>
+                            Prioridade
+                        </strong>
+
+                        <span>
+                            {{ c.prioridade|capitalize }}
+                        </span>
+
                     </div>
 
-                    <div>
-                        <strong>Aberto em:</strong>
 
-                        {% if c.data_abertura %}
-                            {{ c.data_abertura.strftime(
-                                '%d/%m/%Y %H:%M'
-                            ) }}
-                        {% else %}
-                            -
-                        {% endif %}
+                    <div>
+
+                        <strong>
+                            Abertura
+                        </strong>
+
+                        <span>
+
+                            {% if c.data_abertura %}
+
+                                {{ c.data_abertura.strftime(
+                                    '%d/%m/%Y %H:%M'
+                                ) }}
+
+                            {% else %}
+
+                                -
+
+                            {% endif %}
+
+                        </span>
+
                     </div>
 
-                    <div>
-                        <strong>Fechado em:</strong>
 
-                        {% if c.data_fechamento %}
-                            {{ c.data_fechamento.strftime(
-                                '%d/%m/%Y %H:%M'
-                            ) }}
-                        {% else %}
-                            Em aberto
-                        {% endif %}
+                    <div>
+
+                        <strong>
+                            Encerramento
+                        </strong>
+
+                        <span>
+
+                            {% if c.data_fechamento %}
+
+                                {{ c.data_fechamento.strftime(
+                                    '%d/%m/%Y %H:%M'
+                                ) }}
+
+                            {% else %}
+
+                                Em aberto
+
+                            {% endif %}
+
+                        </span>
+
                     </div>
 
                 </div>
 
+
+                <!-- AÇÕES -->
 
                 <div class="chamado-card-acoes">
 
@@ -139,7 +187,7 @@
                         ) }}"
                         class="btn-primario"
                     >
-                        Ver chamado
+                        Ver detalhes do chamado
                     </a>
 
                 </div>
@@ -169,3 +217,4 @@
 {% endif %}
 
 {% endblock %}
+```
