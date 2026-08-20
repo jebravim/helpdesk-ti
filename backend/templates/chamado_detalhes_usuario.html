@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Chamado {{ chamado.codigo_acompanhamento }}
+{% endblock %}
+
+{% block content %}
+
+<div class="chamado-detalhes">
+
+    <!-- CABEÇALHO -->
+
+    <div class="chamado-detalhes-cabecalho">
+
+        <div>
+
+            <span class="chamado-codigo">
+                {{ chamado.codigo_acompanhamento }}
+            </span>
+
+            <h1>
+                {{ chamado.titulo }}
+            </h1>
+
+        </div>
+
+        <span class="badge badge-{{ chamado.status }}">
+
+            {% if chamado.status == "aberto" %}
+                Aberto
+
+            {% elif chamado.status == "em_andamento" %}
+                Em andamento
+
+            {% elif chamado.status == "fechado" %}
+                Fechado
+
+            {% else %}
+                {{ chamado.status }}
+
+            {% endif %}
+
+        </span>
+
+    </div>
+
+
+    <!-- INFORMAÇÕES DO CHAMADO -->
+
+    <div class="chamado-info">
+
+        <div class="info-item">
+
+            <strong>
+                Solicitante
+            </strong>
+
+            <span>
+                {{ chamado.solicitante_nome }}
+            </span>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <strong>
+                Setor
+            </strong>
+
+            <span>
+                {{ chamado.solicitante_setor }}
+            </span>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <strong>
+                Prioridade
+            </strong>
+
+            <span>
+                {{ chamado.prioridade|capitalize }}
+            </span>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <strong>
+                Técnico responsável
+            </strong>
+
+            <span>
+
+                {% if chamado.tecnico_nome %}
+                    {{ chamado.tecnico_nome }}
+                {% else %}
+                    Ainda não atribuído
+                {% endif %}
+
+            </span>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <strong>
+                Data de abertura
+            </strong>
+
+            <span>
+
+                {% if chamado.data_abertura %}
+
+                    {{ chamado.data_abertura.strftime(
+                        '%d/%m/%Y %H:%M'
+                    ) }}
+
+                {% else %}
+                    -
+                {% endif %}
+
+            </span>
+
+        </div>
+
+
+        <div class="info-item">
+
+            <strong>
+                Data de fechamento
+            </strong>
+
+            <span>
+
+                {% if chamado.data_fechamento %}
+
+                    {{ chamado.data_fechamento.strftime(
+                        '%d/%m/%Y %H:%M'
+                    ) }}
+
+                {% else %}
+                    Ainda não fechado
+                {% endif %}
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- DESCRIÇÃO -->
+
+    <div class="chamado-secao">
+
+        <h2>
+            Descrição do problema
+        </h2>
+
+        <div class="descricao-chamado">
+            {{ chamado.descricao }}
+        </div>
+
+    </div>
+
+
+    <!-- HISTÓRICO -->
+
+    <div class="chamado-secao">
+
+        <h2>
+            Histórico da resolução
+        </h2>
+
+
+        {% if historico %}
+
+            <div class="historico">
+
+                {% for h in historico %}
+
+                    <div class="historico-item">
+
+                        <div class="historico-cabecalho">
+
+                            <strong>
+
+                                {% if h.autor %}
+                                    {{ h.autor }}
+                                {% else %}
+                                    Equipe de TI
+                                {% endif %}
+
+                            </strong>
+
+                            <span>
+
+                                {% if h.data %}
+
+                                    {{ h.data.strftime(
+                                        '%d/%m/%Y %H:%M'
+                                    ) }}
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="historico-comentario">
+
+                            {{ h.comentario }}
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+        {% else %}
+
+            <div class="historico-vazio">
+
+                Ainda não existem atualizações ou informações
+                de resolução para este chamado.
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- VOLTAR -->
+
+    <div class="chamado-voltar">
+
+        <a
+            href="{{ url_for('meus_chamados') }}"
+            class="btn-secundario"
+        >
+            ← Voltar para meus chamados
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

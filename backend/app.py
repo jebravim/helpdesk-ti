@@ -284,57 +284,37 @@ def meus_chamados():
     erro = None
 
     if buscou:
+
         if not nome:
             erro = "Informe o nome para buscar."
+
         else:
+
             sql = """
                 SELECT
-                    c.id,
-                    c.titulo,
-                    c.descricao,
-                    c.prioridade,
-                    c.status,
-                    c.solicitante_nome,
-                    c.solicitante_setor,
-                    c.data_abertura,
-                    c.data_fechamento,
-                    c.codigo_acompanhamento
-                FROM chamados c
-                WHERE c.solicitante_nome ILIKE %s
+                    id,
+                    titulo,
+                    descricao,
+                    prioridade,
+                    status,
+                    solicitante_nome,
+                    solicitante_setor,
+                    data_abertura,
+                    data_fechamento,
+                    codigo_acompanhamento
+                FROM chamados
+                WHERE solicitante_nome ILIKE %s
             """
 
             params = [nome]
 
             if codigo:
-                sql += " AND c.codigo_acompanhamento = %s"
+                sql += " AND codigo_acompanhamento = %s"
                 params.append(codigo)
 
-            sql += " ORDER BY c.data_abertura DESC"
+            sql += " ORDER BY data_abertura DESC"
 
             chamados = query(sql, params)
-
-            # ------------------------------------------------
-            # Busca o histórico de cada chamado encontrado
-            # ------------------------------------------------
-
-            for chamado in chamados:
-
-                historico = query(
-                    """
-                    SELECT
-                        h.comentario,
-                        h.data,
-                        u.nome AS autor
-                    FROM historico_chamados h
-                    LEFT JOIN usuarios u
-                        ON h.autor_id = u.id
-                    WHERE h.chamado_id = %s
-                    ORDER BY h.data ASC
-                    """,
-                    (chamado["id"],)
-                )
-
-                chamado["historico"] = historico
 
     return render_template(
         "meus_chamados.html",
@@ -342,6 +322,62 @@ def meus_chamados():
         nome=nome,
         codigo=codigo,
         erro=erro,
+    )
+
+
+# ============================================================
+# DETALHES DO CHAMADO PARA O USUÁRIO
+# ============================================================
+
+@app.route("/meus-chamados/<int:chamado_id>")
+def detalhes_chamado_usuario(chamado_id):
+
+    # Busca o chamado
+    chamado = query(
+        """
+        SELECT
+            c.id,
+            c.titulo,
+            c.descricao,
+            c.prioridade,
+            c.status,
+            c.solicitante_nome,
+            c.solicitante_setor,
+            c.data_abertura,
+            c.data_fechamento,
+            c.codigo_acompanhamento,
+            c.tecnico_nome
+        FROM chamados c
+        WHERE c.id = %s
+        """,
+        (chamado_id,)
+    )
+
+    if not chamado:
+        return "Chamado não encontrado.", 404
+
+    chamado = chamado[0]
+
+    # Busca o histórico da resolução
+    historico = query(
+        """
+        SELECT
+            h.comentario,
+            h.data,
+            u.nome AS autor
+        FROM historico_chamados h
+        LEFT JOIN usuarios u
+            ON h.autor_id = u.id
+        WHERE h.chamado_id = %s
+        ORDER BY h.data ASC
+        """,
+        (chamado_id,)
+    )
+
+    return render_template(
+        "chamado_detalhes_usuario.html",
+        chamado=chamado,
+        historico=historico
     )
 # ============================================================
 # GERENCIAR TÉCNICOS (SOMENTE ADMIN)
